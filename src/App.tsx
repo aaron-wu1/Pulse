@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import reactLogo from './assets/react.svg';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
@@ -30,10 +30,19 @@ function App() {
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
-
+  const pollingRef = useRef(0);
   useEffect(() => {
+    async function pollStats() {
+      pollingRef.current = setInterval(() => {
+        getStats();
+      }, 2000);
+    }
+    pollStats();
     console.log(stats);
-  }, [stats]);
+    return () => {
+      clearInterval(pollingRef.current);
+    };
+  }, []);
 
   return (
     <main className='container'>
@@ -57,7 +66,8 @@ function App() {
       <p>{greetMsg}</p>
 
       <p>Stats</p>
-      <p>{stats.memsize}</p>
+      <p>Memory Avaliable: {stats.memsize}</p>
+      <p>Wired: {stats.wired}</p>
     </main>
   );
 }
