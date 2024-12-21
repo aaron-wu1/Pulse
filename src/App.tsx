@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import reactLogo from './assets/react.svg';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 function App() {
   const [greetMsg, setGreetMsg] = useState('');
@@ -25,6 +31,15 @@ function App() {
     app: number;
     compressed: number;
   }
+  const roundedStats = {
+    active: parseFloat(stats.active.toFixed(2)),
+    inactive: parseFloat(stats.inactive.toFixed(2)),
+    free: parseFloat(stats.free.toFixed(2)),
+    memsize: parseFloat(stats.memsize.toFixed(2)),
+    wired: parseFloat(stats.wired.toFixed(2)),
+    app: parseFloat(stats.app.toFixed(2)),
+    compressed: parseFloat(stats.compressed.toFixed(2)),
+  };
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -34,7 +49,7 @@ function App() {
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
-  const pollingRef = useRef(0);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     async function pollStats() {
       pollingRef.current = setInterval(() => {
@@ -44,14 +59,15 @@ function App() {
     pollStats();
     console.log(stats);
     return () => {
-      clearInterval(pollingRef.current);
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
     };
   }, []);
 
   return (
     <main className='container'>
       <h1>Welcome to Tauri + React</h1>
-
       <form
         className='row'
         onSubmit={(e) => {
@@ -68,13 +84,35 @@ function App() {
         <button type='submit'>Greet</button>
       </form>
       <p>{greetMsg}</p>
-
       <p>Stats</p>
       <p>Memory Avaliable: {stats.memsize}</p>
       <p>Memory Used: {stats.wired + stats.app + stats.compressed}</p>
       <p>Wired: {stats.wired}</p>
       <p>App: {stats.app}</p>
       <p>Compressed: {stats.compressed}</p>
+      <div className='flex justify-center'>
+        <Accordion type='single' collapsible className='w-1/2'>
+          <AccordionItem value='item-1'>
+            <AccordionTrigger>
+              Memory Used:{' '}
+              {parseFloat(
+                (
+                  roundedStats.wired +
+                  roundedStats.app +
+                  roundedStats.compressed
+                ).toFixed(2)
+              )}
+            </AccordionTrigger>
+            <AccordionContent>
+              <AccordionContent>Wired: {roundedStats.wired}</AccordionContent>
+              <AccordionContent>App: {roundedStats.app}</AccordionContent>
+              <AccordionContent>
+                Compressed: {roundedStats.compressed}
+              </AccordionContent>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </main>
   );
 }
