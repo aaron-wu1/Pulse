@@ -71,6 +71,7 @@ function App() {
 
       <p>Stats</p>
       <p>Memory Avaliable: {stats.memsize}</p>
+      <p>Memory Used: {stats.wired + stats.app + stats.compressed}</p>
       <p>Wired: {stats.wired}</p>
       <p>App: {stats.app}</p>
       <p>Compressed: {stats.compressed}</p>
