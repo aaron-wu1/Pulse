@@ -12,6 +12,8 @@ function App() {
     free: 0,
     memsize: 0,
     wired: 0,
+    app: 0,
+    compressed: 0,
   });
 
   interface systemMemoryStats {
@@ -20,6 +22,8 @@ function App() {
     free: number;
     memsize: number;
     wired: number;
+    app: number;
+    compressed: number;
   }
 
   async function greet() {
@@ -68,6 +72,8 @@ function App() {
       <p>Stats</p>
       <p>Memory Avaliable: {stats.memsize}</p>
       <p>Wired: {stats.wired}</p>
+      <p>App: {stats.app}</p>
+      <p>Compressed: {stats.compressed}</p>
     </main>
   );
 }
