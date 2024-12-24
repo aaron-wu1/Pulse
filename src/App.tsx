@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import reactLogo from './assets/react.svg';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
 import {
@@ -8,6 +7,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+
+import { DataTable } from './processes/data-table';
+import { Process, columns } from './processes/columns';
 
 function App() {
   const [greetMsg, setGreetMsg] = useState('');
@@ -22,6 +24,8 @@ function App() {
     compressed: 0,
   });
 
+  const [processes, setProcesses] = useState<Process[]>([]);
+
   interface systemMemoryStats {
     active: number;
     inactive: number;
@@ -31,6 +35,14 @@ function App() {
     app: number;
     compressed: number;
   }
+
+  // interface process {
+  //   pid: number;
+  //   name: string;
+  //   memory: number;
+  //   user: string;
+  // }
+
   const roundedStats = {
     active: parseFloat(stats.active.toFixed(2)),
     inactive: parseFloat(stats.inactive.toFixed(2)),
@@ -49,11 +61,15 @@ function App() {
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
+  async function getProcesses() {
+    setProcesses(await invoke('get_processes'));
+  }
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     async function pollStats() {
       pollingRef.current = setInterval(() => {
         getStats();
+        getProcesses();
       }, 2000);
     }
     pollStats();
@@ -66,30 +82,13 @@ function App() {
   }, []);
 
   return (
-    <main className='container'>
-      <h1>Welcome to Tauri + React</h1>
-      <form
-        className='row'
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-          getStats();
-        }}
-      >
-        <input
-          id='greet-input'
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder='Enter a name...'
-        />
-        <button type='submit'>Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-      <p>Stats</p>
+    <div className='app-container bg-zinc-100 w-full h-full min-h-screen'>
+      {/* <p>Stats</p>
       <p>Memory Avaliable: {stats.memsize}</p>
       <p>Memory Used: {stats.wired + stats.app + stats.compressed}</p>
       <p>Wired: {stats.wired}</p>
       <p>App: {stats.app}</p>
-      <p>Compressed: {stats.compressed}</p>
+      <p>Compressed: {stats.compressed}</p> */}
       <div className='flex justify-center'>
         <Accordion type='single' collapsible className='w-1/2'>
           <AccordionItem value='item-1'>
@@ -113,7 +112,8 @@ function App() {
           </AccordionItem>
         </Accordion>
       </div>
-    </main>
+      <DataTable columns={columns} data={processes} />
+    </div>
   );
 }
 
