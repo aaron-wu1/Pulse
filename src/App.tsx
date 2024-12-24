@@ -11,6 +11,7 @@ import { DataTable } from './processes/data-table';
 import { Process, columns } from './processes/columns';
 import { ThemeProvider } from './components/theme-provider';
 import { ModeToggle } from './components/mode-toggle';
+import { Input } from './components/ui/input';
 
 function App() {
   const [name, setName] = useState('');
@@ -78,7 +79,6 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      {/* <div className='app-container w-full h-full min-h-screen'> */}
       <ModeToggle />
       <div className='flex justify-center'>
         <Accordion type='single' collapsible className='w-1/2'>
@@ -104,7 +104,6 @@ function App() {
         </Accordion>
       </div>
       <DataTable columns={columns} data={processes} />
-      {/* </div> */}
     </ThemeProvider>
   );
 }

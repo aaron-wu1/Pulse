@@ -21,9 +21,9 @@ export const columns: ColumnDef<Process>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           PID
-          {column.getIsSorted() === 'asc' ? (
+          {column.getIsSorted() === 'desc' ? (
             <ChevronDown className='ml-2 h-4 w-4' />
-          ) : column.getIsSorted() === 'desc' ? (
+          ) : column.getIsSorted() === 'asc' ? (
             <ChevronUp className='ml-2 h-4 w-4' />
           ) : null}
         </Button>
@@ -43,9 +43,9 @@ export const columns: ColumnDef<Process>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Name
-          {column.getIsSorted() === 'asc' ? (
+          {column.getIsSorted() === 'desc' ? (
             <ChevronDown className='ml-2 h-4 w-4' />
-          ) : column.getIsSorted() === 'desc' ? (
+          ) : column.getIsSorted() === 'asc' ? (
             <ChevronUp className='ml-2 h-4 w-4' />
           ) : null}
         </Button>
@@ -65,9 +65,9 @@ export const columns: ColumnDef<Process>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           User
-          {column.getIsSorted() === 'asc' ? (
+          {column.getIsSorted() === 'desc' ? (
             <ChevronDown className='ml-2 h-4 w-4' />
-          ) : column.getIsSorted() === 'desc' ? (
+          ) : column.getIsSorted() === 'asc' ? (
             <ChevronUp className='ml-2 h-4 w-4' />
           ) : null}
         </Button>
@@ -87,9 +87,9 @@ export const columns: ColumnDef<Process>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Memory
-          {column.getIsSorted() === 'asc' ? (
+          {column.getIsSorted() === 'desc' ? (
             <ChevronDown className='ml-2 h-4 w-4' />
-          ) : column.getIsSorted() === 'desc' ? (
+          ) : column.getIsSorted() === 'asc' ? (
             <ChevronUp className='ml-2 h-4 w-4' />
           ) : null}
         </Button>
