@@ -76,7 +76,7 @@ fn parse_line(line: &str) -> Option<(String, u64)> {
         // check for non-int types
         match val_str.parse::<u64>() {
             Ok(val) => value = val,
-            Err(e) => println!("value failed to parse as int"),
+            Err(e) => println!("value failed to parse as int\n {}", e),
         }
         return Some((key, value));
     }

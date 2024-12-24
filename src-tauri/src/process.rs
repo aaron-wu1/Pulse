@@ -1,24 +1,88 @@
-use libc::{mach_task_self, pid_t, task_for_pid, task_t};
-pub struct ProcessTask {
-    task: task_t,
+use serde::{Deserialize, Serialize};
+use std::process::Command;
+use tokio::task;
+
+#[derive(Default)] // sets default for struct
+#[derive(Serialize, Deserialize)] // serialize for tauri
+pub struct Process {
+    pub pid: u64,
+    pub name: String,
+    pub memory: f64,
+    pub user: String,
+    pub responsive: bool,
 }
 
-impl ProcessTask {
-    // attempt to attach process with pid
-    pub fn attach_to_process(pid: pid_t) -> io::Result<Self> {
-        let mut task = 0;
+pub async fn get_process_info() -> Vec<Process> {
+    // Use spawn_blocking to offload the blocking operation to another thread
+    let processes = task::spawn_blocking(|| {
+        let mut processes: Vec<Process> = Vec::new();
+        // take snapshop of top command
+        let output = Command::new("top")
+            .arg("-l 1")
+            .output()
+            .expect("Failed to execute top");
+        let output_str = String::from_utf8_lossy(&output.stdout);
 
-        // call the unsafe task for pid
-        let result = unsafe { task_for_pid(mach_task_self(), pid, &mut task) };
-
-        if result == 0 {
-            println!("Attached to process with taskID: {}", task);
-        } else {
-            eprintln!("Failed to attach to process: {}", result)
+        // parse process from top, skip metadata
+        for line in output_str.lines().skip(12) {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            processes.push(parse_line_parts(parts));
         }
-    }
+        processes
+    })
+    .await
+    .unwrap();
+    processes
+}
 
-    pub fn task_port(&self) -> task_t {
-        self.task
+fn parse_line_parts(parts: Vec<&str>) -> Process {
+    let mut index: usize = 1;
+    let mut name = String::from("");
+    for i in 1..parts.len() {
+        if parts[i].parse::<f64>().is_ok() {
+            index = i;
+            break;
+        }
+        name.push_str(parts[i]);
+        name.push(' ');
+    }
+    Process {
+        pid: parts[0].parse::<u64>().unwrap_or(0),
+        name: name.trim().to_string(),
+        memory: parse_memory_line(parts[index + 5]),
+        user: parts[index + 28].to_string(),
+        responsive: true,
+    }
+}
+/// Parses a memory line from the `top` command output and converts it to a standardized format.
+///
+/// # Arguments
+///
+/// * `line` - A string slice that holds the memory information from the `top` command output.
+///
+/// # Returns
+///
+/// A `f64` representing the memory value in KB.
+///
+/// # Example
+///
+/// ```
+/// let memory_line = "1234K";
+/// let parsed_memory = parse_memory_line(memory_line);
+/// assert_eq!(parsed_memory, "1234");
+/// ```
+fn parse_memory_line(line: &str) -> f64 {
+    println!("line: {:?}", line);
+    // let measurement: Vec<&str> = line.split(|c: char| !c.is_numeric()).collect();
+    // println!("measurement: {:?}", measurement);
+    let value = &line[0..line.len() - 1];
+    let unit = &line[line.len() - 1..line.len()];
+    println!("val: {:?}, unit: {:?}", value, unit);
+    let parsed_value = value.parse::<f64>().unwrap_or(0.0);
+    match unit {
+        "K" => parsed_value,
+        "M" => parsed_value * 1024.0,
+        "G" => parsed_value * 1024.0 * 1024.0,
+        _ => 0.0,
     }
 }
