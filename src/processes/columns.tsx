@@ -17,6 +17,7 @@ export const columns: ColumnDef<Process>[] = [
       return (
         <Button
           variant='ghost'
+          className='w-full  flex justify-start'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           PID
@@ -28,6 +29,9 @@ export const columns: ColumnDef<Process>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return <div className='text-left px-4'>{row.getValue('pid')}</div>;
+    },
   },
   {
     accessorKey: 'name',
@@ -35,6 +39,7 @@ export const columns: ColumnDef<Process>[] = [
       return (
         <Button
           variant='ghost'
+          className='w-full flex justify-start'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Name
@@ -46,6 +51,9 @@ export const columns: ColumnDef<Process>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return <div className='text-left px-4'>{row.getValue('name')}</div>;
+    },
   },
   {
     accessorKey: 'user',
@@ -53,6 +61,7 @@ export const columns: ColumnDef<Process>[] = [
       return (
         <Button
           variant='ghost'
+          className='w-full'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           User
@@ -64,6 +73,9 @@ export const columns: ColumnDef<Process>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return <div className='text-center'>{row.getValue('user')}</div>;
+    },
   },
   {
     accessorKey: 'memory',
@@ -71,6 +83,7 @@ export const columns: ColumnDef<Process>[] = [
       <div className='flex justify-end'>
         <Button
           variant='ghost'
+          className='w-full flex justify-end'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Memory
@@ -84,7 +97,7 @@ export const columns: ColumnDef<Process>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <div className='text-right font-medium'>
+        <div className='text-right font-medium px-4'>
           {formatKBytes(row.getValue('memory'))}
         </div>
       );

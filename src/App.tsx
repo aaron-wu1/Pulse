@@ -7,12 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-
 import { DataTable } from './processes/data-table';
 import { Process, columns } from './processes/columns';
+import { ThemeProvider } from './components/theme-provider';
+import { ModeToggle } from './components/mode-toggle';
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState('');
   const [name, setName] = useState('');
   const [stats, setStats] = useState<systemMemoryStats>({
     active: 0,
@@ -53,11 +53,6 @@ function App() {
     compressed: parseFloat(stats.compressed.toFixed(2)),
   };
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke('greet', { name }));
-  }
-
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
@@ -82,13 +77,9 @@ function App() {
   }, []);
 
   return (
-    <div className='app-container bg-zinc-100 w-full h-full min-h-screen'>
-      {/* <p>Stats</p>
-      <p>Memory Avaliable: {stats.memsize}</p>
-      <p>Memory Used: {stats.wired + stats.app + stats.compressed}</p>
-      <p>Wired: {stats.wired}</p>
-      <p>App: {stats.app}</p>
-      <p>Compressed: {stats.compressed}</p> */}
+    <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      {/* <div className='app-container w-full h-full min-h-screen'> */}
+      <ModeToggle />
       <div className='flex justify-center'>
         <Accordion type='single' collapsible className='w-1/2'>
           <AccordionItem value='item-1'>
@@ -113,7 +104,8 @@ function App() {
         </Accordion>
       </div>
       <DataTable columns={columns} data={processes} />
-    </div>
+      {/* </div> */}
+    </ThemeProvider>
   );
 }
 
