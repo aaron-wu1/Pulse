@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rust_memory_profiler",
+  "productName": "pulse",
   "version": "0.1.0",
-  "identifier": "com.rust_memory_profiler.app",
+  "identifier": "com.pulse.app",
   "build": {
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
@@ -30,9 +30,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "macOS": {
-      "entitlements": "src-tauri/macos.entitlements"
-    }
+    ]
   }
 }

@@ -1,19 +1,7 @@
-import { menuItem, RowMenu } from '@/components/row-menu';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 
-import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
-import { invoke } from '@tauri-apps/api/core';
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { RowDropdown } from '@/components/row-dropdown';
 export interface Process {
   pid: number;
@@ -23,17 +11,6 @@ export interface Process {
   status: string;
   responsive: boolean;
 }
-
-const items: menuItem[] = [
-  {
-    name: 'Kill',
-    action: (pid) => {
-      let parsedPid = parseInt(pid);
-      console.log('Killing process FRONTEND', pid, 'parsed', parsedPid);
-      invoke('kill_process', { pid: pid });
-    },
-  },
-];
 
 export const columns: ColumnDef<Process>[] = [
   {

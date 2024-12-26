@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { DataTable } from './processes/data-table';
 import { Process, columns } from './processes/columns';
@@ -28,7 +28,7 @@ function App() {
   // }
 
   // const PollingContext = createContext<PollingContextType | null>(null);
-  const { isPollingEnabled, setIsPollingEnabled } = usePolling();
+  const { isPollingEnabled } = usePolling();
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
