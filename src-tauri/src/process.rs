@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sysinfo::{ProcessStatus, System, Users};
+use sysinfo::{ProcessRefreshKind, ProcessStatus, RefreshKind, System, Users};
 use tokio::task;
 
 #[derive(Default)] // sets default for struct
@@ -18,6 +18,10 @@ pub async fn get_process_info() -> Vec<Process> {
         // Use spawn_blocking to offload the blocking operation to another thread
         let mut processes: Vec<Process> = Vec::new();
         let mut sys = System::new_all();
+        // // refresh with only process info
+        // sys.refresh_specifics(
+        //     RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
+        // );
         let users = Users::new_with_refreshed_list();
 
         // First we update all information of our `System` struct.
