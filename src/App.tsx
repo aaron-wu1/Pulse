@@ -2,11 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { DataTable } from './processes/data-table';
 import { Process, columns } from './processes/columns';
-
+import { usePolling } from './components/polling-provider';
 import { systemMemoryStats, MemoryStats } from './components/memory-stats';
 import './App.css';
-import { PollToggle } from './components/poll-toggle';
-import { usePolling } from './components/polling-provider';
 
 function App() {
   const [stats, setStats] = useState<systemMemoryStats>({
@@ -66,7 +64,6 @@ function App() {
     <>
       <DataTable columns={columns} data={processes} />
       <MemoryStats stats={stats} />
-      <PollToggle />
     </>
   );
 }

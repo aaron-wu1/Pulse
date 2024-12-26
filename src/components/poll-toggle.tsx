@@ -5,7 +5,6 @@ export function PollToggle() {
   return (
     <Button
       onClick={() => {
-        console.log('test', isPollingEnabled);
         setIsPollingEnabled(!isPollingEnabled);
       }}
     >

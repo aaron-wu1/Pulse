@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
-
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { RowDropdown } from '@/components/row-dropdown';
 export interface Process {
@@ -55,16 +54,7 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return (
-        // <RowMenu
-        //   items={items.map((item) => ({
-        //     ...item,
-        //     action: () => item.action(parseInt(row.getValue('pid'))),
-        //   }))}
-        // >
-        <div className='text-left px-6 py-2'>{row.getValue('name')}</div>
-        // </RowMenu>
-      );
+      return <div className='text-left px-6 py-2'>{row.getValue('name')}</div>;
     },
   },
   {
@@ -87,9 +77,7 @@ export const columns: ColumnDef<Process>[] = [
     },
     cell: ({ row }) => {
       return (
-        // <RowMenu items={items}>
         <div className='text-left px-6 py-2'>{row.getValue('status')}</div>
-        // </RowMenu>
       );
     },
   },
@@ -113,9 +101,7 @@ export const columns: ColumnDef<Process>[] = [
     },
     cell: ({ row }) => {
       return (
-        // <RowMenu items={items}>
         <div className='text-left px-6 py-2'>{row.getValue('responsive')}</div>
-        // </RowMenu>
       );
     },
   },
@@ -138,11 +124,7 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return (
-        // <RowMenu items={items}>
-        <div className='text-left px-6 py-2'>{row.getValue('user')}</div>
-        // {/* </RowMenu> */}
-      );
+      return <div className='text-left px-6 py-2'>{row.getValue('user')}</div>;
     },
   },
   {
@@ -165,11 +147,9 @@ export const columns: ColumnDef<Process>[] = [
     ),
     cell: ({ row }) => {
       return (
-        // <RowMenu items={items}>
         <div className='text-right font-medium px-4'>
           {formatKBytes(row.getValue('memory'))}
         </div>
-        // </RowMenu>
       );
     },
   },
