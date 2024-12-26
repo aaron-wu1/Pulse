@@ -18,14 +18,7 @@ function App() {
   });
 
   const [processes, setProcesses] = useState<Process[]>([]);
-  // const [isPollingEnabled, setIsPollingEnabled] = useState(true);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  // interface PollingContextType {
-  //   isPollingEnabled: boolean;
-  //   setIsPollingEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  // }
-
-  // const PollingContext = createContext<PollingContextType | null>(null);
   const { isPollingEnabled } = usePolling();
   async function getStats() {
     setStats(await invoke('get_stats'));
@@ -35,7 +28,6 @@ function App() {
   }
 
   useEffect(() => {
-    // console.log('polling', isPollingEnabled);
     const pollStats = async () => {
       pollingRef.current = setInterval(() => {
         getStats();
