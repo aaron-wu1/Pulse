@@ -4,6 +4,7 @@ use std::ffi::CString;
 use std::io;
 // use std::mem; // memusage
 // use std::ptr; // pointers
+use tokio::task;
 
 use std::process::Command;
 
@@ -33,9 +34,9 @@ struct VmStats {
 
 const PAGE_SIZE_KB: u64 = 16; // page = 16kb for arm
 
-fn bytes_to_gbs(bytes: u64) -> f64 {
-    return bytes as f64 / (1024.0 * 1024.0 * 1024.0);
-}
+// fn bytes_to_gbs(bytes: u64) -> f64 {
+//     return bytes as f64 / (1024.0 * 1024.0 * 1024.0);
+// }
 
 fn pages_to_gbs(pages: u64) -> f64 {
     return (pages * PAGE_SIZE_KB) as f64 / (1024.0 * 1024.0);
@@ -43,7 +44,7 @@ fn pages_to_gbs(pages: u64) -> f64 {
 
 fn parse_vm_stat_output(output: &str) -> VmStats {
     let mut vm_stats = VmStats::default();
-    for line in output.lines() {
+    for line in output.lines().skip(1) {
         let parsed_line = parse_line(line);
         match parsed_line {
             Some((key, value)) => match key.as_str() {
@@ -84,82 +85,90 @@ fn parse_line(line: &str) -> Option<(String, u64)> {
     None
 }
 
-pub fn get_system_memory_stats() -> io::Result<SystemMemoryStats> {
-    let mut free: u64 = 0;
-    let mut memsize: u64 = 0;
-    let mut page_pageable_internal_count_size: u64 = 0;
-    let mut size = std::mem::size_of::<u64> as size_t;
-    let mut size1 = std::mem::size_of::<f64> as size_t;
-    // Convert Rust string to a C string
-    let free_key = CString::new("vm.page_free_count").unwrap();
-    let memsize_key = CString::new("hw.memsize").unwrap();
-    let page_pageable_internal_count = CString::new("vm.page_pageable_internal_count").unwrap();
-    unsafe {
-        if sysctlbyname(
-            free_key.as_ptr(),
-            &mut free as *mut u64 as *mut c_void,
-            &mut size,
-            std::ptr::null_mut(),
-            0,
-        ) != 0
-        {
-            return Err(io::Error::last_os_error());
+pub async fn get_system_memory_stats() -> Result<SystemMemoryStats, io::Error> {
+    let result: Result<SystemMemoryStats, io::Error> = task::spawn_blocking(|| {
+        let mut system_memory_stats = SystemMemoryStats::default();
+        let mut free: u64 = 0;
+        let mut memsize: u64 = 0;
+        let mut page_pageable_internal_count_size: u64 = 0;
+        let mut size = std::mem::size_of::<u64> as size_t;
+        let mut size1 = std::mem::size_of::<f64> as size_t;
+        // Convert Rust string to a C string
+        let free_key = CString::new("vm.page_free_count").unwrap();
+        let memsize_key = CString::new("hw.memsize").unwrap();
+        let page_pageable_internal_count = CString::new("vm.page_pageable_internal_count").unwrap();
+        unsafe {
+            if sysctlbyname(
+                free_key.as_ptr(),
+                &mut free as *mut u64 as *mut c_void,
+                &mut size,
+                std::ptr::null_mut(),
+                0,
+            ) != 0
+            {
+                return Err(io::Error::last_os_error());
+            }
+            if sysctlbyname(
+                memsize_key.as_ptr(),
+                &mut memsize as *mut u64 as *mut c_void,
+                &mut size1,
+                std::ptr::null_mut(),
+                0,
+            ) != 0
+            {
+                return Err(io::Error::last_os_error());
+            }
+            if sysctlbyname(
+                memsize_key.as_ptr(),
+                &mut memsize as *mut u64 as *mut c_void,
+                &mut size1,
+                std::ptr::null_mut(),
+                0,
+            ) != 0
+            {
+                return Err(io::Error::last_os_error());
+            }
+            if sysctlbyname(
+                page_pageable_internal_count.as_ptr(),
+                &mut page_pageable_internal_count_size as *mut u64 as *mut c_void,
+                &mut size1,
+                std::ptr::null_mut(),
+                0,
+            ) != 0
+            {
+                return Err(io::Error::last_os_error());
+            }
         }
-        if sysctlbyname(
-            memsize_key.as_ptr(),
-            &mut memsize as *mut u64 as *mut c_void,
-            &mut size1,
-            std::ptr::null_mut(),
-            0,
-        ) != 0
-        {
-            return Err(io::Error::last_os_error());
-        }
-        if sysctlbyname(
-            memsize_key.as_ptr(),
-            &mut memsize as *mut u64 as *mut c_void,
-            &mut size1,
-            std::ptr::null_mut(),
-            0,
-        ) != 0
-        {
-            return Err(io::Error::last_os_error());
-        }
-        if sysctlbyname(
-            page_pageable_internal_count.as_ptr(),
-            &mut page_pageable_internal_count_size as *mut u64 as *mut c_void,
-            &mut size1,
-            std::ptr::null_mut(),
-            0,
-        ) != 0
-        {
-            return Err(io::Error::last_os_error());
-        }
-    }
 
-    // call vm stats
-    // run vm_stats command
-    let output = Command::new("vm_stat")
-        .output()
-        .expect("Failed to execute vm_stat");
-    // parse to a string
-    let output_str = String::from_utf8_lossy(&output.stdout); // returns a Cow (smart pointer providing clone-on-write fn)
+        // call vm stats
+        // run vm_stats command
+        let output = Command::new("vm_stat")
+            .output()
+            .expect("Failed to execute vm_stat");
+        // parse to a string
+        let output_str = String::from_utf8_lossy(&output.stdout); // returns a Cow (smart pointer providing clone-on-write fn)
 
-    let vm_stats = parse_vm_stat_output(&output_str);
-    println!("memsize {}", memsize);
-    println!("wired {}", vm_stats.wired);
-    println!("wired {}", vm_stats.compressed);
-    println!(
-        "page_pageable_internal_count_size {}",
-        page_pageable_internal_count_size
-    );
-    Ok(SystemMemoryStats {
-        free: free * 16384,
-        active: vm_stats.active,
-        inactive: vm_stats.inactive,
-        app: pages_to_gbs(page_pageable_internal_count_size) - vm_stats.purgeable,
-        wired: vm_stats.wired,
-        compressed: vm_stats.compressed,
-        memsize: memsize as f64 / (1024.0 * 1024.0 * 1024.0), // memsize: memsize * 16384,
+        let vm_stats = parse_vm_stat_output(&output_str);
+        // SystemMemoryStats {
+        //     free: free * 16384,
+        //     active: vm_stats.active,
+        //     inactive: vm_stats.inactive,
+        //     app: pages_to_gbs(page_pageable_internal_count_size) - vm_stats.purgeable,
+        //     wired: vm_stats.wired,
+        //     compressed: vm_stats.compressed,
+        //     memsize: memsize as f64 / (1024.0 * 1024.0 * 1024.0), // memsize: memsize * 16384,
+        // }
+        system_memory_stats.free = free * 16384;
+        system_memory_stats.active = vm_stats.active;
+        system_memory_stats.inactive = vm_stats.inactive;
+        system_memory_stats.app =
+            pages_to_gbs(page_pageable_internal_count_size) - vm_stats.purgeable;
+        system_memory_stats.wired = vm_stats.wired;
+        system_memory_stats.compressed = vm_stats.compressed;
+        system_memory_stats.memsize = memsize as f64 / (1024.0 * 1024.0 * 1024.0);
+        Ok(system_memory_stats)
     })
+    .await
+    .unwrap();
+    result
 }

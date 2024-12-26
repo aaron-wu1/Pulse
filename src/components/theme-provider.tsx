@@ -52,10 +52,11 @@ export function ThemeProvider({
     theme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
+      console.log('Setting Theme to', theme);
       setTheme(theme);
     },
   };
-
+  // console.log('ThemeProvider', value);
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
       {children}

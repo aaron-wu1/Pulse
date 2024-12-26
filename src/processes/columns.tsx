@@ -1,14 +1,39 @@
+import { menuItem, RowMenu } from '@/components/row-menu';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
+import { invoke } from '@tauri-apps/api/core';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+import { RowDropdown } from '@/components/row-dropdown';
 export interface Process {
   pid: number;
   name: string;
   memory: number;
   user: string;
+  status: string;
+  responsive: boolean;
 }
+
+const items: menuItem[] = [
+  {
+    name: 'Kill',
+    action: (pid) => {
+      let parsedPid = parseInt(pid);
+      console.log('Killing process FRONTEND', pid, 'parsed', parsedPid);
+      invoke('kill_process', { pid: pid });
+    },
+  },
+];
 
 export const columns: ColumnDef<Process>[] = [
   {
@@ -30,7 +55,8 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return <div className='text-left px-4'>{row.getValue('pid')}</div>;
+      const pid = row.getValue('pid');
+      return <div className='text-left px-6 py-2'>{String(pid)}</div>;
     },
   },
   {
@@ -52,7 +78,68 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return <div className='text-left px-4'>{row.getValue('name')}</div>;
+      return (
+        // <RowMenu
+        //   items={items.map((item) => ({
+        //     ...item,
+        //     action: () => item.action(parseInt(row.getValue('pid'))),
+        //   }))}
+        // >
+        <div className='text-left px-6 py-2'>{row.getValue('name')}</div>
+        // </RowMenu>
+      );
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant='ghost'
+          className='w-full flex justify-start'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Status
+          {column.getIsSorted() === 'desc' ? (
+            <ChevronDown className='ml-2 h-4 w-4' />
+          ) : column.getIsSorted() === 'asc' ? (
+            <ChevronUp className='ml-2 h-4 w-4' />
+          ) : null}
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        // <RowMenu items={items}>
+        <div className='text-left px-6 py-2'>{row.getValue('status')}</div>
+        // </RowMenu>
+      );
+    },
+  },
+  {
+    accessorKey: 'responsive',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant='ghost'
+          className='w-full flex justify-start'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Responsive
+          {column.getIsSorted() === 'desc' ? (
+            <ChevronDown className='ml-2 h-4 w-4' />
+          ) : column.getIsSorted() === 'asc' ? (
+            <ChevronUp className='ml-2 h-4 w-4' />
+          ) : null}
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        // <RowMenu items={items}>
+        <div className='text-left px-6 py-2'>{row.getValue('responsive')}</div>
+        // </RowMenu>
+      );
     },
   },
   {
@@ -74,7 +161,11 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return <div className='text-center'>{row.getValue('user')}</div>;
+      return (
+        // <RowMenu items={items}>
+        <div className='text-left px-6 py-2'>{row.getValue('user')}</div>
+        // {/* </RowMenu> */}
+      );
     },
   },
   {
@@ -97,10 +188,19 @@ export const columns: ColumnDef<Process>[] = [
     ),
     cell: ({ row }) => {
       return (
+        // <RowMenu items={items}>
         <div className='text-right font-medium px-4'>
           {formatKBytes(row.getValue('memory'))}
         </div>
+        // </RowMenu>
       );
+    },
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const pid = row.getValue('pid');
+      return <RowDropdown pid={pid} />;
     },
   },
 ];
