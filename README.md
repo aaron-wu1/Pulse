@@ -1,7 +1,15 @@
-# Tauri + React + Typescript
+# Pulse
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+A simple, no frills process and memory profiler for Mac that is built in Rust and Typescript
 
-## Recommended IDE Setup
+## Description
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+![Pulse Demo](.github/assets/pulse-readme-demo.png)
+
+Made to quickly kill unresponsive applications and debug memory issues without the clutter of default system montioring applications
+
+## Getting Started
+
+### Quickstart
+
+Download the latest release [here](/releases/latest) and follow install instructions
