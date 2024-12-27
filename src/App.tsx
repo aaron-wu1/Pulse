@@ -76,8 +76,12 @@ function App() {
   return (
     <>
       <Toaster />
-      <DataTable columns={columns} data={processes} />
-      <MemoryStats stats={stats} />
+      <div className='h-[92vh] w-[100vw]'>
+        <DataTable columns={columns} data={processes} />
+      </div>
+      <div className='h-[8vh] w-[100vw] p-4'>
+        <MemoryStats stats={stats} />
+      </div>
     </>
   );
 }

@@ -2556,6 +2556,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pulse"
+version = "0.1.0"
+dependencies = [
+ "addr2line",
+ "libc",
+ "memmap2",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-shell",
+ "tokio",
+]
+
+[[package]]
 name = "quick-xml"
 version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2764,22 +2780,6 @@ dependencies = [
  "wasm-streams",
  "web-sys",
  "windows-registry",
-]
-
-[[package]]
-name = "rust_memory_profiler"
-version = "0.1.0"
-dependencies = [
- "addr2line",
- "libc",
- "memmap2",
- "serde",
- "serde_json",
- "sysinfo",
- "tauri",
- "tauri-build",
- "tauri-plugin-shell",
- "tokio",
 ]
 
 [[package]]

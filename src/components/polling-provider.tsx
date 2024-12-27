@@ -27,10 +27,6 @@ export function PollingProvider({
   storageKey = 'pulse-polling',
   ...props
 }: PollingProviderProps) {
-  const parseBool = (value: string | null) => {
-    return value === 'true';
-  };
-
   const [isPollingEnabled, setIsPollingEnabled] =
     useState<boolean>(defaultPolling);
   const value = {

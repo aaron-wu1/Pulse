@@ -82,30 +82,6 @@ export const columns: ColumnDef<Process>[] = [
     },
   },
   {
-    accessorKey: 'responsive',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          className='w-full flex justify-start'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Responsive
-          {column.getIsSorted() === 'desc' ? (
-            <ChevronDown className='ml-2 h-4 w-4' />
-          ) : column.getIsSorted() === 'asc' ? (
-            <ChevronUp className='ml-2 h-4 w-4' />
-          ) : null}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <div className='text-left px-6 py-2'>{row.getValue('responsive')}</div>
-      );
-    },
-  },
-  {
     accessorKey: 'user',
     header: ({ column }) => {
       return (
@@ -124,7 +100,9 @@ export const columns: ColumnDef<Process>[] = [
       );
     },
     cell: ({ row }) => {
-      return <div className='text-left px-6 py-2'>{row.getValue('user')}</div>;
+      return (
+        <div className='text-center px-6 py-2'>{row.getValue('user')}</div>
+      );
     },
   },
   {
