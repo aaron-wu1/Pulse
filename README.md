@@ -12,4 +12,4 @@ Made to quickly kill unresponsive applications and debug memory issues without t
 
 ### Quickstart
 
-Download the latest release [here](/releases/latest) and follow install instructions
+Download the latest release [here](https://github.com/aaron-wu1/Pulse/releases) and follow install instructions
