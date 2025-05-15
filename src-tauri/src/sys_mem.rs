@@ -149,15 +149,6 @@ pub async fn get_system_memory_stats() -> Result<SystemMemoryStats, io::Error> {
         let output_str = String::from_utf8_lossy(&output.stdout); // returns a Cow (smart pointer providing clone-on-write fn)
 
         let vm_stats = parse_vm_stat_output(&output_str);
-        // SystemMemoryStats {
-        //     free: free * 16384,
-        //     active: vm_stats.active,
-        //     inactive: vm_stats.inactive,
-        //     app: pages_to_gbs(page_pageable_internal_count_size) - vm_stats.purgeable,
-        //     wired: vm_stats.wired,
-        //     compressed: vm_stats.compressed,
-        //     memsize: memsize as f64 / (1024.0 * 1024.0 * 1024.0), // memsize: memsize * 16384,
-        // }
         system_memory_stats.free = free * 16384;
         system_memory_stats.active = vm_stats.active;
         system_memory_stats.inactive = vm_stats.inactive;
