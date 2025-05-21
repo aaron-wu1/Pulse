@@ -6,9 +6,11 @@ import { usePolling } from './components/polling-provider';
 import { systemMemoryStats, MemoryStats } from './components/memory-stats';
 import { listen } from '@tauri-apps/api/event';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from './components/ui/input';
 
 import './App.css';
 import { Toaster } from './components/ui/toaster';
+import { Button } from './components/ui/button';
 
 function App() {
   const [stats, setStats] = useState<systemMemoryStats>({
@@ -25,12 +27,22 @@ function App() {
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const { isPollingEnabled } = usePolling();
   const { toast } = useToast();
+  const [chatMessage, setChatMessage] = useState<string>('');
+  const [chatResponse, setChatResponse] = useState<string>('');
 
   async function getStats() {
     setStats(await invoke('get_stats'));
   }
   async function getProcesses() {
     setProcesses(await invoke('get_processes'));
+  }
+
+  async function sendChatMessage() {
+    console.log('Sent', chatMessage);
+    console.log(
+      'recived',
+      await invoke('send_chat_message', { prompt: chatMessage })
+    );
   }
 
   type ProcessKilledInfo = {
@@ -76,6 +88,14 @@ function App() {
   return (
     <>
       <Toaster />
+      <Input
+        placeholder='Chat...'
+        value={chatMessage}
+        onChange={(event) => setChatMessage(event.target.value)}
+        className='max-w-md'
+      />
+      <Button onClick={() => sendChatMessage()}></Button>
+      <p>RESPONSE: {chatResponse}</p>
       <div className='h-[92vh] w-[100vw]'>
         <DataTable columns={columns} data={processes} />
       </div>

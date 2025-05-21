@@ -25,5 +25,7 @@ serde_json = "1"
 libc = "0.2.167"
 memmap2 = "0.9.5"
 addr2line = "0.24.2"
-tokio = "1.42.0"
+tokio = { version = "1.42.0", features = ["full"] }
 sysinfo = "0.33.0"
+kalosm = { version = "0.4.0", features = ["language"] }
+ollama-rs = "0.3.1"
