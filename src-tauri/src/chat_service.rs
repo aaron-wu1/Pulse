@@ -1,4 +1,3 @@
-use kalosm::language::*;
 use ollama_rs::error::OllamaError;
 use ollama_rs::{
     generation::completion::{request::GenerationRequest, GenerationResponse},

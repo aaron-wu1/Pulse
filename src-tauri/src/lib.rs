@@ -2,6 +2,8 @@ mod chat_service;
 mod process;
 mod sys_mem;
 
+use std::time::Duration;
+
 use crate::process::Process;
 use crate::sys_mem::SystemMemoryStats;
 use chat_service::ChatService;
@@ -36,6 +38,18 @@ async fn get_stats() -> SystemMemoryStats {
 #[tauri::command]
 async fn get_processes() -> Vec<Process> {
     process::get_process_info().await
+}
+
+#[tauri::command]
+async fn update_process_info(window: tauri::Window) {
+    tokio::spawn(async move {
+        loop {
+            let process_info = process::get_process_info().await;
+            window.emit("process_update", &process_info).unwrap();
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
+    return ();
 }
 
 #[tauri::command]
@@ -82,6 +96,64 @@ async fn send_chat_message(
     Ok(response)
 }
 
+#[tauri::command]
+async fn get_process_info(
+    state: tauri::State<'_, Mutex<ChatService>>,
+    prompt: String,
+) -> Result<String, ()> {
+    println!("BACKEND received: {}", prompt);
+    let encap_prompt = format!(
+        r#"[System]
+    You are an expert on macOS system processes. For each of the following process names, provide a brief explanation (1–3 sentences max). If the function is unknown or unclear, say "Unknown."
+    
+    [User]
+    {}
+    
+    [Assistant]
+    "#,
+        prompt
+    );
+
+    let mut chat = state.lock().await;
+    let res = chat
+        .send_message(&encap_prompt)
+        .await
+        .map_err(|e| e.to_string())
+        .unwrap();
+    println!("BACKEND send: {}", res.response);
+    let response = res.response;
+    Ok(response)
+}
+
+#[tauri::command]
+async fn get_dumb_process_info(
+    state: tauri::State<'_, Mutex<ChatService>>,
+    prompt: String,
+) -> Result<String, ()> {
+    println!("BACKEND received: {}", prompt);
+    let encap_prompt = format!(
+        r#"[System]
+    You are an expert on macOS system processes. For each of the following process names, provide a brief explanation (1–3 sentences max). If the function is unknown or unclear, say "Unknown.". You have to explain it to the user like if they were five years old.
+    
+    [User]
+    {}
+    
+    [Assistant]
+    "#,
+        prompt
+    );
+
+    let mut chat = state.lock().await;
+    let res = chat
+        .send_message(&encap_prompt)
+        .await
+        .map_err(|e| e.to_string())
+        .unwrap();
+    println!("BACKEND send: {}", res.response);
+    let response = res.response;
+    Ok(response)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {
     let chat_service = ChatService::new()
@@ -95,7 +167,10 @@ pub async fn run() {
             get_stats,
             get_processes,
             kill_process,
-            send_chat_message
+            send_chat_message,
+            get_process_info,
+            get_dumb_process_info,
+            update_process_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

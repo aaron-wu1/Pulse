@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
 } from '@tanstack/react-table';
 
-import { useState } from 'react';
+import { useState, memo, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -21,11 +21,38 @@ import {
 import { Input } from '@/components/ui/input';
 import { Header } from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Info } from '@/components/info';
+import { Row } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
+
+interface MemoTableRowProps<TData> {
+  row: Row<TData>;
+}
+
+interface MemoTableRowProps<TData> {
+  row: Row<TData>;
+}
+
+function MemoTableRowInner<TData>({ row }: MemoTableRowProps<TData>) {
+  return (
+    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+      {row.getVisibleCells().map((cell, idx) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {idx === 1 && <Info pName={String(cell.getValue())} depth={1} />}
+          {idx === 1 && <Info pName={String(cell.getValue())} depth={0} />}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+const MemoTableRow = memo(MemoTableRowInner) as typeof MemoTableRowInner;
 
 export function DataTable<TData, TValue>({
   columns,
@@ -50,6 +77,15 @@ export function DataTable<TData, TValue>({
     enableMultiSort: false,
   });
 
+  const { rows } = table.getRowModel();
+  // Virtualization of rows
+  const parentRef = useRef(null);
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 24,
+    overscan: 50,
+  });
   return (
     <div className='w-full h-full flex flex-col'>
       <div className='flex items-center py-4 justify-between px-4'>
@@ -67,7 +103,7 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
       {/* <div className='w-full h-full rounded-md border'> */}
-      <ScrollArea className='rounded-md border'>
+      <ScrollArea className='rounded-md border' ref={parentRef}>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -89,22 +125,12 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              virtualizer.getVirtualItems().map((virtualRow, index) => {
+                const row = rows[virtualRow.index];
+                return <MemoTableRow row={row} />;
+              })
             ) : (
+              // table.getRowModel().rows.map((row) => <MemoTableRow row={row} />)
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
