@@ -73,30 +73,30 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    const pollStats = async () => {
-      pollingRef.current = setInterval(() => {
-        getStats();
-        getProcesses();
-      }, 100000);
-    };
+  // useEffect(() => {
+  //   const pollStats = async () => {
+  //     pollingRef.current = setInterval(() => {
+  //       getStats();
+  //       getProcesses();
+  //     }, 100000);
+  //   };
 
-    const stopPolling = () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
-    };
+  //   const stopPolling = () => {
+  //     if (pollingRef.current) {
+  //       clearInterval(pollingRef.current);
+  //     }
+  //   };
 
-    if (isPollingEnabled) {
-      pollStats();
-    } else {
-      stopPolling();
-    }
+  //   if (isPollingEnabled) {
+  //     pollStats();
+  //   } else {
+  //     stopPolling();
+  //   }
 
-    return () => {
-      stopPolling();
-    };
-  }, [isPollingEnabled]);
+  //   return () => {
+  //     stopPolling();
+  //   };
+  // }, [isPollingEnabled]);
 
   return (
     <>

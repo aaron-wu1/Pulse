@@ -21,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Header } from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Info } from '@/components/info';
 import { Row } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';

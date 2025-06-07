@@ -2,6 +2,7 @@ import { DialogContent, Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
 
 interface InfoProps {
   pName: string;
@@ -11,6 +12,8 @@ interface InfoProps {
 export function Info({ pName, depth }: InfoProps) {
   // const [chatMessage, setChatMessage] = useState<string>(pName);
   const [chatResponse, setChatResponse] = useState<string>('');
+  const [open, setOpen] = useState<boolean>(false);
+  useProcessUpdateState(open);
 
   async function sendChatMessage(depth: number) {
     console.log('Sent', pName);
@@ -31,7 +34,7 @@ export function Info({ pName, depth }: InfoProps) {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger onClick={() => sendChatMessage(depth)}>
         {depth == 0 ? <p>nerd</p> : <p>(i)</p>}
       </DialogTrigger>

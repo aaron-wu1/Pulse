@@ -8,18 +8,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
-import { usePolling } from '@/components/polling-provider';
 import { invoke } from '@tauri-apps/api/core';
+import { useState } from 'react';
+import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
 
 export function RowDropdown({ pid }: { pid: unknown }) {
-  const { setIsPollingEnabled } = usePolling();
+  const [open, setOpen] = useState<boolean>(false);
+  useProcessUpdateState(open);
   return (
-    <DropdownMenu
-      onOpenChange={(isOpen) => {
-        console.log('set is polling', !isOpen);
-        setIsPollingEnabled(!isOpen);
-      }}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='h-8 w-8 p-0'>
           <span className='sr-only'>Open menu</span>

@@ -1,5 +1,6 @@
 mod chat_service;
 mod process;
+mod process_update_controller;
 mod sys_mem;
 
 use std::time::Duration;
@@ -7,9 +8,12 @@ use std::time::Duration;
 use crate::process::Process;
 use crate::sys_mem::SystemMemoryStats;
 use chat_service::ChatService;
+use process_update_controller::ProcessUpdateController;
 use serde::Serialize;
+use std::sync::Arc;
 use sysinfo::{Pid, System};
 use tauri::{AppHandle, Emitter};
+use tokio::sync::watch;
 use tokio::sync::Mutex;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[derive(Serialize, Clone)]
@@ -41,15 +45,45 @@ async fn get_processes() -> Vec<Process> {
 }
 
 #[tauri::command]
-async fn update_process_info(window: tauri::Window) {
+async fn pause_updates(
+    state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
+) -> Result<(), String> {
+    let mut controller = state.lock().await;
+    controller.pause();
+    Ok(())
+}
+
+#[tauri::command]
+async fn resume_updates(
+    state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
+) -> Result<(), String> {
+    let mut controller = state.lock().await;
+    controller.resume();
+    Ok(())
+}
+
+#[tauri::command]
+async fn update_process_info(
+    state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
+    window: tauri::Window,
+) -> Result<(), String> {
+    let controller = state.lock().await;
+    let mut pause_rx = controller.pause_tx.subscribe();
     tokio::spawn(async move {
         loop {
+            // controller is paused, wait
+            let is_paused: bool = *pause_rx.borrow();
+            // print!("isPaused {}", is_paused);
+            if is_paused {
+                pause_rx.changed().await.unwrap();
+                continue;
+            }
             let process_info = process::get_process_info().await;
             window.emit("process_update", &process_info).unwrap();
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     });
-    return ();
+    Ok(())
 }
 
 #[tauri::command]
@@ -159,9 +193,13 @@ pub async fn run() {
     let chat_service = ChatService::new()
         .await
         .expect("Failed to initialize ChatService");
+    let (pause_tx, _pause_rx) = tokio::sync::watch::channel(false);
+    let controller = ProcessUpdateController { pause_tx };
+    let shared_controller = Arc::new(Mutex::new(controller));
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .manage(tokio::sync::Mutex::new(chat_service)) // add chat service to tauri state
+        .manage(shared_controller)
         .invoke_handler(tauri::generate_handler![
             greet,
             get_stats,
@@ -170,7 +208,9 @@ pub async fn run() {
             send_chat_message,
             get_process_info,
             get_dumb_process_info,
-            update_process_info
+            update_process_info,
+            resume_updates,
+            pause_updates
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
