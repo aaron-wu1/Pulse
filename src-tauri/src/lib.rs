@@ -40,6 +40,37 @@ async fn get_stats() -> SystemMemoryStats {
 }
 
 #[tauri::command]
+async fn update_sys_mem_stats(
+    state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
+    window: tauri::Window,
+) -> Result<(), String> {
+    let controller = state.lock().await;
+    let mut pause_rx = controller.pause_tx.subscribe();
+    tokio::spawn(async move {
+        loop {
+            // controller is paused, wait
+            let is_paused: bool = *pause_rx.borrow();
+            // print!("isPaused {}", is_paused);
+            if is_paused {
+                pause_rx.changed().await.unwrap();
+                continue;
+            }
+            let sys_mem_stats = match sys_mem::get_system_memory_stats().await {
+                // unpacks to match validation type
+                Ok(stats) => stats,
+                Err(e) => {
+                    eprintln!("Error getting system memory stats: {}", e);
+                    SystemMemoryStats::default() // Return a default instance if applicable
+                }
+            };
+            window.emit("sys_mem_update", &sys_mem_stats).unwrap();
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
+    Ok(())
+}
+
+#[tauri::command]
 async fn get_processes() -> Vec<Process> {
     process::get_process_info().await
 }
@@ -48,7 +79,7 @@ async fn get_processes() -> Vec<Process> {
 async fn pause_updates(
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
 ) -> Result<(), String> {
-    let mut controller = state.lock().await;
+    let controller = state.lock().await;
     controller.pause();
     Ok(())
 }
@@ -57,7 +88,7 @@ async fn pause_updates(
 async fn resume_updates(
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
 ) -> Result<(), String> {
-    let mut controller = state.lock().await;
+    let controller = state.lock().await;
     controller.resume();
     Ok(())
 }
@@ -73,7 +104,6 @@ async fn update_process_info(
         loop {
             // controller is paused, wait
             let is_paused: bool = *pause_rx.borrow();
-            // print!("isPaused {}", is_paused);
             if is_paused {
                 pause_rx.changed().await.unwrap();
                 continue;
@@ -210,7 +240,8 @@ pub async fn run() {
             get_dumb_process_info,
             update_process_info,
             resume_updates,
-            pause_updates
+            pause_updates,
+            update_sys_mem_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

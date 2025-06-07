@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { DataTable } from './processes/data-table';
 import { Process, columns } from './processes/columns';
-import { usePolling } from './components/polling-provider';
 import { systemMemoryStats, MemoryStats } from './components/memory-stats';
 import { listen } from '@tauri-apps/api/event';
 import { useToast } from '@/hooks/use-toast';
@@ -22,16 +21,16 @@ function App() {
   });
 
   const [processes, setProcesses] = useState<Process[]>([]);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const { isPollingEnabled } = usePolling();
+  // const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  // const { isPollingEnabled } = usePolling();
   const { toast } = useToast();
 
-  async function getStats() {
-    setStats(await invoke('get_stats'));
-  }
-  async function getProcesses() {
-    setProcesses(await invoke('get_processes'));
-  }
+  // async function getStats() {
+  //   setStats(await invoke('get_stats'));
+  // }
+  // async function getProcesses() {
+  //   setProcesses(await invoke('get_processes'));
+  // }
 
   type ProcessKilledInfo = {
     pid: number;
@@ -56,8 +55,13 @@ function App() {
 
   useEffect(() => {
     invoke('update_process_info');
+    invoke('update_sys_mem_stats');
 
-    const unlisten = listen('process_update', (event) => {
+    const unlistenSysMemStats = listen('sys_mem_update', (event) => {
+      setStats(event.payload as systemMemoryStats);
+    });
+
+    const unlistenProcessInfo = listen('process_update', (event) => {
       const updatedProcesses = event.payload as Process[];
       setProcesses((prev) => {
         const map = new Map(prev.map((p) => [p.pid, p]));
@@ -69,7 +73,8 @@ function App() {
     });
 
     return () => {
-      unlisten.then((fn) => fn());
+      unlistenSysMemStats.then((fn) => fn());
+      unlistenProcessInfo.then((fn) => fn());
     };
   }, []);
 

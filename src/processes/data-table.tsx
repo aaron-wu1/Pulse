@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 24,
-    overscan: 50,
+    overscan: 200,
   });
   return (
     <div className='w-full h-full flex flex-col'>
