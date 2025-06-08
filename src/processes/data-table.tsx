@@ -39,9 +39,16 @@ interface MemoTableRowProps<TData> {
   row: Row<TData>;
 }
 
-function MemoTableRowInner<TData>({ row }: MemoTableRowProps<TData>) {
+function MemoTableRowInner<TData>({
+  row,
+  style,
+}: MemoTableRowProps<TData> & { style: React.CSSProperties }) {
   return (
-    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+    <TableRow
+      key={row.id}
+      data-state={row.getIsSelected() && 'selected'}
+      style={style}
+    >
       {row.getVisibleCells().map((cell, idx) => (
         <TableCell key={cell.id}>
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -88,7 +95,7 @@ export function DataTable<TData, TValue>({
   });
   return (
     <div className='w-full h-full flex flex-col'>
-      <div className='flex items-center py-4 justify-between px-4'>
+      <div className='h-24 flex items-center py-4 justify-between px-4'>
         <Header />
         <div className='flex justify-end gap-4 w-9/12'>
           <Input
@@ -102,48 +109,61 @@ export function DataTable<TData, TValue>({
           <ModeToggle />
         </div>
       </div>
-      {/* <div className='w-full h-full rounded-md border'> */}
-      <ScrollArea className='rounded-md border' ref={parentRef}>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+      </Table>
+      <ScrollArea className='h-full w-full rounded-md border' ref={parentRef}>
+        <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
+          <Table>
+            <TableBody className='h-full w-full'>
+              {table.getRowModel().rows?.length ? (
+                virtualizer.getVirtualItems().map((virtualRow, index) => {
+                  const row = rows[virtualRow.index];
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+                    <MemoTableRow
+                      row={row}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${
+                          virtualRow.start - index * virtualRow.size
+                        }px)`,
+                        width: '100%',
+                      }}
+                    />
                   );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              virtualizer.getVirtualItems().map((virtualRow, index) => {
-                const row = rows[virtualRow.index];
-                return <MemoTableRow row={row} />;
-              })
-            ) : (
-              // table.getRowModel().rows.map((row) => <MemoTableRow row={row} />)
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                })
+              ) : (
+                // table.getRowModel().rows.map((row) => <MemoTableRow row={row} />)
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center'
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </ScrollArea>
     </div>
-    // </div>
   );
 }
