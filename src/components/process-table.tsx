@@ -10,7 +10,6 @@ function ProcessDataTable() {
   const [rate, setRate] = useState<number>(2000);
 
   const handleProcessUpdate = useThrottle((event: Event<any>) => {
-    console.log('TEst');
     const updatedProcesses = event.payload as Process[];
     setProcesses((prev) => {
       const map = new Map(prev.map((p) => [p.pid, p]));
@@ -25,17 +24,6 @@ function ProcessDataTable() {
     invoke('update_process_info');
 
     const unlistenProcessInfo = listen('process_update', handleProcessUpdate);
-
-    // const unlistenProcessInfo = listen('process_update', (event) => {
-    //   const updatedProcesses = event.payload as Process[];
-    //   setProcesses((prev) => {
-    //     const map = new Map(prev.map((p) => [p.pid, p]));
-    //     for (const proc of updatedProcesses) {
-    //       map.set(proc.pid, proc);
-    //     }
-    //     return Array.from(map.values());
-    //   });
-    // });
 
     return () => {
       unlistenProcessInfo.then((fn) => fn());
