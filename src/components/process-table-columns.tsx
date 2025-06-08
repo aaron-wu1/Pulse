@@ -11,7 +11,7 @@ export interface Process {
   responsive: boolean;
 }
 
-export const columns: ColumnDef<Process>[] = [
+export const processTableColumns: ColumnDef<Process>[] = [
   {
     accessorKey: 'pid',
     header: ({ column }) => {

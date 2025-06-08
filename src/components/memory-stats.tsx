@@ -1,4 +1,7 @@
 import { Separator } from './ui/separator';
+import { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 export interface systemMemoryStats {
   active: number;
   inactive: number;
@@ -9,7 +12,28 @@ export interface systemMemoryStats {
   compressed: number;
 }
 
-export function MemoryStats({ stats }: { stats: systemMemoryStats }) {
+export function MemoryStats() {
+  const [stats, setStats] = useState<systemMemoryStats>({
+    active: 0,
+    inactive: 0,
+    free: 0,
+    memsize: 0,
+    wired: 0,
+    app: 0,
+    compressed: 0,
+  });
+
+  useEffect(() => {
+    invoke('update_sys_mem_stats');
+    const unlistenSysMemStats = listen('sys_mem_update', (event) => {
+      setStats(event.payload as systemMemoryStats);
+    });
+
+    return () => {
+      unlistenSysMemStats.then((fn) => fn());
+    };
+  }, []);
+
   const roundedStats = {
     active: parseFloat(stats.active.toFixed(2)),
     inactive: parseFloat(stats.inactive.toFixed(2)),
@@ -49,27 +73,6 @@ export function MemoryStats({ stats }: { stats: systemMemoryStats }) {
       <div className='p-2 text-center flex justify-center'>
         Compressed Memory: {roundedStats.compressed} GB
       </div>
-      {/* <Accordion type='single' collapsible className='w-1/2'>
-        <AccordionItem value='item-1'>
-          <AccordionTrigger>
-            Memory Used:{' '}
-            {parseFloat(
-              (
-                roundedStats.wired +
-                roundedStats.app +
-                roundedStats.compressed
-              ).toFixed(2)
-            )}
-          </AccordionTrigger>
-          <AccordionContent>
-            <AccordionContent>Wired: {roundedStats.wired}</AccordionContent>
-            <AccordionContent>App: {roundedStats.app}</AccordionContent>
-            <AccordionContent>
-              Compressed: {roundedStats.compressed}
-            </AccordionContent>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion> */}
     </div>
   );
 }

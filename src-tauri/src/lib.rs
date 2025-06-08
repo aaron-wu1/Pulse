@@ -239,7 +239,7 @@ pub async fn run() {
         .await
         .expect("Failed to initialize ChatService");
     let (pause_tx, _pause_rx) = tokio::sync::watch::channel(false);
-    let (rate_tx, _rate_tx) = tokio::sync::watch::channel(120u64);
+    let (rate_tx, _rate_tx) = tokio::sync::watch::channel(2u64);
     let controller = ProcessUpdateController { pause_tx, rate_tx };
     let shared_controller = Arc::new(Mutex::new(controller));
     tauri::Builder::default()
