@@ -2,6 +2,7 @@ import { Separator } from './ui/separator';
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { useThrottle } from '@/hooks/use-throttle';
 export interface systemMemoryStats {
   active: number;
   inactive: number;
@@ -22,15 +23,25 @@ export function MemoryStats() {
     app: 0,
     compressed: 0,
   });
+  const [rate, setRate] = useState<number>(2000);
+
+  const handleSysMemStatsUpdate = useThrottle((event) => {
+    setStats(event.payload as systemMemoryStats);
+  }, rate);
 
   useEffect(() => {
     invoke('update_sys_mem_stats');
-    const unlistenSysMemStats = listen('sys_mem_update', (event) => {
-      setStats(event.payload as systemMemoryStats);
+    const unlistenSysMemStats = listen(
+      'sys_mem_update',
+      handleSysMemStatsUpdate
+    );
+    const unlistenRate = listen('rate_update', (event) => {
+      setRate(event.payload as number);
     });
 
     return () => {
       unlistenSysMemStats.then((fn) => fn());
+      unlistenRate.then((fn) => fn());
     };
   }, []);
 

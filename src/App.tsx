@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import './App.css';
 import { Toaster } from './components/ui/toaster';
 import { Chat } from './components/chat';
+import menu from './components/menu';
 
 function App() {
   const { toast } = useToast();
@@ -23,6 +24,8 @@ function App() {
       description: `Process ID killed: ${event.payload.pid}`,
     });
   });
+
+  menu.setAsAppMenu();
 
   return (
     <>

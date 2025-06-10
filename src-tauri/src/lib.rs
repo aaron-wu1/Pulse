@@ -10,7 +10,6 @@ use crate::sys_mem::SystemMemoryStats;
 use chat_service::ChatService;
 use process_update_controller::ProcessUpdateController;
 use serde::Serialize;
-use std::cell::Cell;
 use std::sync::Arc;
 use sysinfo::{Pid, System};
 use tauri::{AppHandle, Emitter};
@@ -46,7 +45,7 @@ async fn update_sys_mem_stats(
 ) -> Result<(), String> {
     let controller = state.lock().await;
     let mut pause_rx = controller.pause_tx.subscribe();
-    let mut rate_rx = controller.rate_tx.subscribe();
+    let rate_rx = controller.rate_tx.subscribe();
     tokio::spawn(async move {
         loop {
             // controller is paused, wait
@@ -67,7 +66,7 @@ async fn update_sys_mem_stats(
             let rate: u64 = *rate_rx.borrow();
 
             window.emit("sys_mem_update", &sys_mem_stats).unwrap();
-            tokio::time::sleep(Duration::from_secs(rate)).await;
+            tokio::time::sleep(Duration::from_millis(rate)).await;
         }
     });
     Ok(())
@@ -82,8 +81,10 @@ async fn get_processes() -> Vec<Process> {
 async fn pause_updates(
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
 ) -> Result<(), String> {
+    println!("PAUSED UPDATES");
     let controller = state.lock().await;
     controller.pause();
+
     Ok(())
 }
 
@@ -91,6 +92,7 @@ async fn pause_updates(
 async fn resume_updates(
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
 ) -> Result<(), String> {
+    println!("RESUMED UPDATES");
     let controller = state.lock().await;
     controller.resume();
     Ok(())
@@ -103,7 +105,7 @@ async fn update_process_info(
 ) -> Result<(), String> {
     let controller = state.lock().await;
     let mut pause_rx = controller.pause_tx.subscribe();
-    let mut rate_rx = controller.rate_tx.subscribe();
+    let rate_rx = controller.rate_tx.subscribe();
     tokio::spawn(async move {
         loop {
             // controller is paused, wait
@@ -115,7 +117,7 @@ async fn update_process_info(
             let process_info = process::get_process_info().await;
             let rate = *rate_rx.borrow();
             window.emit("process_update", &process_info).unwrap();
-            tokio::time::sleep(Duration::from_secs(rate)).await;
+            tokio::time::sleep(Duration::from_millis(rate)).await;
         }
     });
     Ok(())
@@ -227,9 +229,11 @@ async fn get_dumb_process_info(
 async fn update_rate(
     new_rate: u64,
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
+    window: tauri::Window,
 ) -> Result<(), String> {
     let controller = state.lock().await;
     controller.set_rate(new_rate);
+    window.emit("rate_update", new_rate).unwrap();
     Ok(())
 }
 
@@ -239,7 +243,7 @@ pub async fn run() {
         .await
         .expect("Failed to initialize ChatService");
     let (pause_tx, _pause_rx) = tokio::sync::watch::channel(false);
-    let (rate_tx, _rate_tx) = tokio::sync::watch::channel(2u64);
+    let (rate_tx, _rate_tx) = tokio::sync::watch::channel(2000u64);
     let controller = ProcessUpdateController { pause_tx, rate_tx };
     let shared_controller = Arc::new(Mutex::new(controller));
     tauri::Builder::default()
@@ -257,7 +261,8 @@ pub async fn run() {
             update_process_info,
             resume_updates,
             pause_updates,
-            update_sys_mem_stats
+            update_sys_mem_stats,
+            update_rate
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

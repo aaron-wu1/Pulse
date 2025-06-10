@@ -24,9 +24,13 @@ function ProcessDataTable() {
     invoke('update_process_info');
 
     const unlistenProcessInfo = listen('process_update', handleProcessUpdate);
+    const unlistenRate = listen('rate_update', (event) => {
+      setRate(event.payload as number);
+    });
 
     return () => {
       unlistenProcessInfo.then((fn) => fn());
+      unlistenRate.then((fn) => fn());
     };
   }, []);
 

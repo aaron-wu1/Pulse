@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface InfoProps {
   pName: string;
@@ -13,6 +14,12 @@ export function Info({ pName, depth }: InfoProps) {
   // const [chatMessage, setChatMessage] = useState<string>(pName);
   const [chatResponse, setChatResponse] = useState<string>('');
   const [open, setOpen] = useState<boolean>(false);
+
+  const debounceOnOpenChange = useDebounce((isOpen) => {
+    if (isOpen != open) {
+      setOpen(isOpen);
+    }
+  }, 300);
   useProcessUpdateState(open);
 
   async function sendChatMessage(depth: number) {
@@ -34,7 +41,7 @@ export function Info({ pName, depth }: InfoProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={debounceOnOpenChange}>
       <DialogTrigger onClick={() => sendChatMessage(depth)}>
         {depth == 0 ? <p>nerd</p> : <p>(i)</p>}
       </DialogTrigger>

@@ -11,12 +11,18 @@ import { MoreHorizontal } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export function RowDropdown({ pid }: { pid: unknown }) {
   const [open, setOpen] = useState<boolean>(false);
+  const debounceOnOpenChange = useDebounce((isOpen) => {
+    if (isOpen !== open) {
+      setOpen(isOpen);
+    }
+  }, 300);
   useProcessUpdateState(open);
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={debounceOnOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='h-8 w-8 p-0'>
           <span className='sr-only'>Open menu</span>

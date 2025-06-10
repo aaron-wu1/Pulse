@@ -138,6 +138,7 @@ export function DataTable<TData, TValue>({
                   const row = rows[virtualRow.index];
                   return (
                     <MemoTableRow
+                      key={row.id}
                       row={row}
                       style={{
                         height: `${virtualRow.size}px`,
