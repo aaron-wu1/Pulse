@@ -2,14 +2,14 @@ import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { RowDropdown } from '@/components/row-dropdown';
-export interface Process {
+export type Process = {
   pid: number;
   name: string;
   memory: number;
   user: string;
   status: string;
   responsive: boolean;
-}
+};
 
 export const processTableColumns: ColumnDef<Process>[] = [
   {

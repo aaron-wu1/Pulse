@@ -25,24 +25,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Info } from '@/components/info';
 import { Row } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Process } from '../process-table-columns';
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-}
+// interface DataTableProps<Process, TValue> {
+//   columns: ColumnDef<Process, TValue>[];
+//   data: Process[];
+// }
 
-interface MemoTableRowProps<TData> {
-  row: Row<TData>;
-}
+// interface MemoTableRowProps<TData> {
+//   row: Row<TData>;
+// }
 
-interface MemoTableRowProps<TData> {
-  row: Row<TData>;
-}
-
-function MemoTableRowInner<TData>({
+function MemoTableRowInner<Process>({
   row,
   style,
-}: MemoTableRowProps<TData> & { style: React.CSSProperties }) {
+}: { row: Row<Process> } & {
+  style: React.CSSProperties;
+}) {
   return (
     <TableRow
       key={row.id}
@@ -61,10 +60,13 @@ function MemoTableRowInner<TData>({
 }
 const MemoTableRow = memo(MemoTableRowInner) as typeof MemoTableRowInner;
 
-export function DataTable<TData, TValue>({
+export function DataTable<Process, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: {
+  columns: ColumnDef<Process, TValue>[];
+  data: Process[];
+}) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'memory', desc: true },
   ]);
@@ -73,6 +75,7 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.pid,
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -84,6 +87,7 @@ export function DataTable<TData, TValue>({
     enableMultiSort: false,
   });
 
+  // const rows = useMemo(() => table.getRowModel().rows, [table]);
   const { rows } = table.getRowModel();
   // Virtualization of rows
   const parentRef = useRef(null);
@@ -91,6 +95,7 @@ export function DataTable<TData, TValue>({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 24,
+    getItemKey: (index) => rows[index]?.id,
     overscan: 200,
   });
   return (
@@ -133,7 +138,7 @@ export function DataTable<TData, TValue>({
         <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
           <Table>
             <TableBody className='h-full w-full'>
-              {table.getRowModel().rows?.length ? (
+              {rows.length ? (
                 virtualizer.getVirtualItems().map((virtualRow, index) => {
                   const row = rows[virtualRow.index];
                   return (

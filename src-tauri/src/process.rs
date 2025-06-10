@@ -45,6 +45,8 @@ pub async fn get_process_info() -> Vec<Process> {
             });
             // println!("[{pid}] {:?} {:?}", process.name(), process.disk_usage());
         }
+        // Sort processes
+        processes.sort_by_key(|p| p.pid);
         // let mut processes: Vec<Process> = Vec::new();
         // // take snapshop of top command
         // let output = Command::new("top")
