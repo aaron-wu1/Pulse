@@ -8,12 +8,16 @@ use std::time::Duration;
 use crate::process::Process;
 use crate::sys_mem::SystemMemoryStats;
 use chat_service::ChatService;
+use once_cell::sync::Lazy;
 use process_update_controller::ProcessUpdateController;
 use serde::Serialize;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use sysinfo::{Pid, System};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
+
+static PROCESS_OBSERVER_STARTED: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[derive(Serialize, Clone)]
 struct ProcessKilledInfo {
@@ -103,6 +107,10 @@ async fn update_process_info(
     state: tauri::State<'_, Arc<Mutex<ProcessUpdateController>>>,
     window: tauri::Window,
 ) -> Result<(), String> {
+    // RUN only ONCE
+    if PROCESS_OBSERVER_STARTED.swap(true, Ordering::SeqCst) {
+        return Ok(());
+    }
     let controller = state.lock().await;
     let mut pause_rx = controller.pause_tx.subscribe();
     let rate_rx = controller.rate_tx.subscribe();
