@@ -17,7 +17,7 @@ pub struct Process {
 
 static PREVIOUS_SNAPSHOT: OnceCell<Arc<Mutex<HashMap<u32, Process>>>> = OnceCell::new();
 // 1024 bytes
-const MEM_THRESHOLD: u64 = 1024;
+const MEM_THRESHOLD: u64 = 512;
 
 fn get_snapshot_store() -> Arc<Mutex<HashMap<u32, Process>>> {
     PREVIOUS_SNAPSHOT
@@ -47,6 +47,8 @@ pub async fn get_process_info() -> Vec<Process> {
     let prev_snapshot = prev_snapshot_guard.clone();
 
     let mut curr_snapshot = HashMap::new();
+
+    let mut processes: Vec<Process> = Vec::new();
 
     // let mut sys = System::new_all();
     // // refresh with only process info
@@ -89,17 +91,15 @@ pub async fn get_process_info() -> Vec<Process> {
             responsive: true,
         };
 
+        curr_snapshot.insert(process.pid().as_u32(), curr_process.clone());
+        // check for difference
         match prev_snapshot.get(&curr_process.pid) {
-            Some(prev_process) if !diff_process(&prev_process, &curr_process) => {
-                continue;
-            }
+            Some(prev_process) if !diff_process(&prev_process, &curr_process) => continue,
             _ => {
-                curr_snapshot.insert(process.pid().as_u32(), curr_process.clone());
+                processes.push(curr_process.clone());
             }
         }
     }
-    // let mut processes: Vec<Process> = Vec::new();
-    let mut processes: Vec<Process> = curr_snapshot.values().cloned().collect();
     // Sort processes
     processes.sort_by_key(|p| p.pid);
     // update snapshot
