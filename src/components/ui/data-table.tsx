@@ -25,7 +25,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Info } from '@/components/info';
 import { Row } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Process } from '../process-table-columns';
 
 // interface DataTableProps<Process, TValue> {
 //   columns: ColumnDef<Process, TValue>[];
@@ -39,7 +38,8 @@ import { Process } from '../process-table-columns';
 function MemoTableRowInner<Process>({
   row,
   style,
-}: { row: Row<Process> } & {
+}: {
+  row: Row<Process>;
   style: React.CSSProperties;
 }) {
   return (
@@ -77,9 +77,9 @@ export function DataTable<Process, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.pid,
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
       columnFilters,
@@ -94,7 +94,7 @@ export function DataTable<Process, TValue>({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 24,
+    estimateSize: () => 58,
     getItemKey: (index) => rows[index]?.id,
     overscan: 200,
   });
@@ -135,7 +135,12 @@ export function DataTable<Process, TValue>({
         </TableHeader>
       </Table>
       <ScrollArea className='h-full w-full rounded-md border' ref={parentRef}>
-        <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            position: 'relative',
+          }}
+        >
           <Table>
             <TableBody className='h-full w-full'>
               {rows.length ? (
@@ -146,11 +151,8 @@ export function DataTable<Process, TValue>({
                       key={row.id}
                       row={row}
                       style={{
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${
-                          virtualRow.start - index * virtualRow.size
-                        }px)`,
                         width: '100%',
+                        height: `${virtualRow.size}px`,
                       }}
                     />
                   );

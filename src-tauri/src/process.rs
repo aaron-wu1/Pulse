@@ -104,7 +104,6 @@ pub async fn get_process_info() -> Vec<Process> {
     processes.sort_by_key(|p| p.pid);
     // update snapshot
     *prev_snapshot_guard = curr_snapshot;
-    println!("Number of processes: {}", processes.len());
     processes
 }
 
