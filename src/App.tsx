@@ -28,7 +28,7 @@ function App() {
   menu.setAsAppMenu();
 
   return (
-    <>
+    <div className='w-screen h-screen'>
       <Toaster />
       <Chat />
       <div className='h-[92vh] w-[100vw]'>
@@ -37,7 +37,7 @@ function App() {
       <div className='h-[8vh] w-[100vw] p-4'>
         <MemoryStats />
       </div>
-    </>
+    </div>
   );
 }
 

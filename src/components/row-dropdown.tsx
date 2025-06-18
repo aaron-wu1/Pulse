@@ -12,8 +12,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
 import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
 import { useDebounce } from '@/hooks/use-debounce';
+import { CustomCellRendererProps } from 'ag-grid-react';
 
-export function RowDropdown({ pid }: { pid: unknown }) {
+export function RowDropdown(params: CustomCellRendererProps) {
+  const pid = params.value ?? -1;
   const [open, setOpen] = useState<boolean>(false);
   const debounceOnOpenChange = useDebounce((isOpen) => {
     if (isOpen !== open) {
@@ -39,6 +41,7 @@ export function RowDropdown({ pid }: { pid: unknown }) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className='text-red-500'
+          disabled={pid < 0}
           onSelect={() => invoke('kill_process', { pid: pid })}
         >
           Kill
