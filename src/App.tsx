@@ -6,9 +6,17 @@ import './App.css';
 import { Toaster } from './components/ui/toaster';
 import { Chat } from './components/chat';
 import menu from './components/menu';
+import { useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 function App() {
   const { toast } = useToast();
+
+  // Inital listeners
+  useEffect(() => {
+    invoke('update_process_info');
+    invoke('update_sys_mem_stats');
+  }, []);
 
   type ProcessKilledInfo = {
     pid: number;
@@ -30,7 +38,6 @@ function App() {
   return (
     <div className='w-screen h-screen'>
       <Toaster />
-      <Chat />
       <div className='h-[92vh] w-[100vw]'>
         <ProcessDataTable />
       </div>

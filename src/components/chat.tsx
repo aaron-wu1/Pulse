@@ -3,6 +3,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
+import { MessageCircleQuestion } from 'lucide-react';
 
 export function Chat() {
   const [chatMessage, setChatMessage] = useState<string>('');
@@ -20,7 +21,12 @@ export function Chat() {
 
   return (
     <Dialog>
-      <DialogTrigger>Open</DialogTrigger>
+      <DialogTrigger>
+        <Button variant='outline' size='icon'>
+          <MessageCircleQuestion />
+          <span className='sr-only'>Toggle Chat</span>
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <Input
           placeholder='Chat...'

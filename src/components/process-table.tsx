@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
-import { invoke } from '@tauri-apps/api/core';
 import { listen, Event } from '@tauri-apps/api/event';
 import { useThrottle } from '@/hooks/use-throttle';
 import { Process } from './process-table-columns';
@@ -11,6 +10,7 @@ import { ModeToggle } from './mode-toggle';
 import { themeBalham } from 'ag-grid-community';
 import { useTheme } from '@/components/theme-provider';
 import { RowDropdown } from './row-dropdown';
+import { Chat } from './chat';
 
 function formatKBytes(kBytes: number): string {
   if (kBytes < 1024) return `${kBytes} B`;
@@ -90,8 +90,6 @@ function ProcessDataTable() {
   }, rate);
 
   useEffect(() => {
-    invoke('update_process_info');
-
     const unlistenProcessInfo = listen('process_update', handleProcessUpdate);
     const unlistenRate = listen('rate_update', (event) => {
       setRate(event.payload as number);
@@ -105,7 +103,7 @@ function ProcessDataTable() {
 
   return (
     <div className='p-4 h-full w-full flex flex-col'>
-      <div className='h-24 flex items-center py-4 justify-between px-4'>
+      <div className='h-24 flex items-center py-4 justify-between'>
         <Header />
         <div className='flex justify-end gap-4 w-9/12'>
           <Input
@@ -114,6 +112,7 @@ function ProcessDataTable() {
             className='max-w-md'
           />
           <ModeToggle />
+          <Chat />
         </div>
       </div>
       <div className='rounded-2xl shadow-md border border-muted bg-background h-full w-full'>

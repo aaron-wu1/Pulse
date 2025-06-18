@@ -1,7 +1,4 @@
-use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use sysinfo::{ProcessRefreshKind, ProcessStatus, ProcessesToUpdate, System, Users};
 
 #[derive(Default)] // sets default for struct
@@ -15,46 +12,8 @@ pub struct Process {
     pub responsive: bool,
 }
 
-static PREVIOUS_SNAPSHOT: OnceCell<Arc<Mutex<HashMap<u32, Process>>>> = OnceCell::new();
-// 1024 bytes
-const MEM_THRESHOLD: u64 = 512;
-
-fn get_snapshot_store() -> Arc<Mutex<HashMap<u32, Process>>> {
-    PREVIOUS_SNAPSHOT
-        .get_or_init(|| Arc::new(Mutex::new(HashMap::new())))
-        .clone()
-}
-
-fn memory_diff_exceeds_threshold(a: u64, b: u64, threshold: u64) -> bool {
-    let diff = if a > b { a - b } else { b - a };
-    diff >= threshold
-}
-
-fn diff_process(prev_process: &Process, curr_process: &Process) -> bool {
-    return prev_process.name != curr_process.name
-        || prev_process.status != curr_process.status
-        || prev_process.user != curr_process.user
-        || prev_process.responsive != curr_process.responsive
-        || memory_diff_exceeds_threshold(prev_process.memory, curr_process.memory, MEM_THRESHOLD);
-}
-
 pub async fn get_process_info() -> Vec<Process> {
-    // let processes = task::(|| {
-    // Use spawn_blocking to offload the blocking operation to another thread
-    let snapshot = get_snapshot_store();
-    let mut prev_snapshot_guard: std::sync::MutexGuard<'_, HashMap<u32, Process>> =
-        snapshot.lock().unwrap();
-    let prev_snapshot = prev_snapshot_guard.clone();
-
-    let mut curr_snapshot = HashMap::new();
-
     let mut processes: Vec<Process> = Vec::new();
-
-    // let mut sys = System::new_all();
-    // // refresh with only process info
-    // sys.refresh_specifics(
-    //     RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
-    // );
 
     let mut sys = System::new();
 
@@ -90,20 +49,10 @@ pub async fn get_process_info() -> Vec<Process> {
             status: parse_status(process.status()),
             responsive: true,
         };
-
-        curr_snapshot.insert(process.pid().as_u32(), curr_process.clone());
-        // check for difference
-        match prev_snapshot.get(&curr_process.pid) {
-            Some(prev_process) if !diff_process(&prev_process, &curr_process) => continue,
-            _ => {
-                processes.push(curr_process.clone());
-            }
-        }
+        processes.push(curr_process.clone());
     }
     // Sort processes
     processes.sort_by_key(|p| p.pid);
-    // update snapshot
-    *prev_snapshot_guard = curr_snapshot;
     processes
 }
 
