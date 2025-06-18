@@ -1,6 +1,5 @@
 import { Menu, MenuItem, Submenu } from '@tauri-apps/api/menu';
 import { invoke } from '@tauri-apps/api/core';
-import { Window } from '@tauri-apps/api/window';
 
 const fileSubmenu = await Submenu.new({
   text: 'File',

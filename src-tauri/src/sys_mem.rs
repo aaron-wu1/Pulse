@@ -2,8 +2,6 @@ use libc::{c_void, size_t, sysctlbyname};
 use serde::{Deserialize, Serialize};
 use std::ffi::CString;
 use std::io;
-// use std::mem; // memusage
-// use std::ptr; // pointers
 use tokio::task;
 
 use std::process::Command;
@@ -33,10 +31,6 @@ struct VmStats {
 }
 
 const PAGE_SIZE_KB: u64 = 16; // page = 16kb for arm
-
-// fn bytes_to_gbs(bytes: u64) -> f64 {
-//     return bytes as f64 / (1024.0 * 1024.0 * 1024.0);
-// }
 
 fn pages_to_gbs(pages: u64) -> f64 {
     return (pages * PAGE_SIZE_KB) as f64 / (1024.0 * 1024.0);

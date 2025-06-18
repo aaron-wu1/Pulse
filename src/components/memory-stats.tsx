@@ -1,6 +1,5 @@
 import { Separator } from './ui/separator';
 import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { useThrottle } from '@/hooks/use-throttle';
 export interface systemMemoryStats {
@@ -30,7 +29,6 @@ export function MemoryStats() {
   }, rate);
 
   useEffect(() => {
-    invoke('update_sys_mem_stats');
     const unlistenSysMemStats = listen(
       'sys_mem_update',
       handleSysMemStatsUpdate
@@ -56,7 +54,6 @@ export function MemoryStats() {
   };
   return (
     <div className='flex h-5 items-center justify-around space-x-4 text-sm p-4'>
-      {/* <Separator className='my-4' /> */}
       <div className='p-2 text-center flex justify-center'>
         Memory Avaliable: {roundedStats.memsize} GB
       </div>

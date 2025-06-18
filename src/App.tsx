@@ -4,7 +4,6 @@ import { listen } from '@tauri-apps/api/event';
 import { useToast } from '@/hooks/use-toast';
 import './App.css';
 import { Toaster } from './components/ui/toaster';
-import { Chat } from './components/chat';
 import menu from './components/menu';
 import { useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';

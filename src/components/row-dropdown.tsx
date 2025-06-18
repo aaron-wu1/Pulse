@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
-import { useProcessUpdateState } from '@/hooks/useProcessUpdateState';
+import { useProcessUpdateState } from '@/hooks/use-process-update-state';
 import { useDebounce } from '@/hooks/use-debounce';
 import { CustomCellRendererProps } from 'ag-grid-react';
 

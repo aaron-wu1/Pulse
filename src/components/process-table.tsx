@@ -3,7 +3,6 @@ import { AgGridReact } from 'ag-grid-react';
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { listen, Event } from '@tauri-apps/api/event';
 import { useThrottle } from '@/hooks/use-throttle';
-import { Process } from './process-table-columns';
 import { Input } from '@/components/ui/input';
 import { Header } from '@/components/header';
 import { ModeToggle } from './mode-toggle';
@@ -18,6 +17,15 @@ function formatKBytes(kBytes: number): string {
   else if (kBytes < 1024 * 1024 * 1024)
     return `${(kBytes / (1024 * 1024)).toFixed(2)} MB`;
   else return `${(kBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+export interface Process {
+  pid: number;
+  name: string;
+  memory: number;
+  user: string;
+  status: string;
+  responsive: boolean;
 }
 
 function ProcessDataTable() {
