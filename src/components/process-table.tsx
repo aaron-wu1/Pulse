@@ -10,6 +10,7 @@ import { themeBalham } from 'ag-grid-community';
 import { useTheme } from '@/components/theme-provider';
 import { RowDropdown } from './row-dropdown';
 import { Chat } from './chat';
+import { ProcessName } from './process-name';
 
 function formatKBytes(kBytes: number): string {
   if (kBytes < 1024) return `${kBytes} B`;
@@ -68,19 +69,24 @@ function ProcessDataTable() {
   const columnDefs: ColDef<Process>[] = useMemo(
     () => [
       { field: 'pid', headerName: 'PID', flex: 1 },
-      { field: 'name', headerName: 'Name', flex: 2 },
+      {
+        field: 'name',
+        headerName: 'Name',
+        flex: 2,
+        cellRenderer: ProcessName,
+      },
       {
         field: 'memory',
         headerName: 'Memory',
+        sort: 'desc',
+        flex: 1,
         cellRenderer: (param: ValueFormatterParams<Process>) => {
           return formatKBytes(param.value);
         },
-        sort: 'desc',
-        flex: 1,
       },
       { field: 'user', headerName: 'User', flex: 1 },
       { field: 'status', headerName: 'Status', flex: 1 },
-      { cellRenderer: RowDropdown, type: 'fitCellContents', flex: 0.35 },
+      { cellRenderer: RowDropdown, flex: 0.35 },
     ],
     []
   );

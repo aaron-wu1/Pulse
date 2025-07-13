@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProcessUpdateState } from '@/hooks/use-process-update-state';
 import { useDebounce } from '@/hooks/use-debounce';
+import { Info as InfoIcon } from 'lucide-react';
 
 interface InfoProps {
-  pName: string;
+  rowData: any;
   depth: number;
 }
 
-export function Info({ pName, depth }: InfoProps) {
+export function Info({ rowData, depth }: InfoProps) {
   const [chatResponse, setChatResponse] = useState<string>('');
   const [open, setOpen] = useState<boolean>(false);
 
@@ -23,17 +24,25 @@ export function Info({ pName, depth }: InfoProps) {
 
   async function sendChatMessage(depth: number) {
     if (depth == 1) {
-      setChatResponse(await invoke('get_process_info', { prompt: pName }));
+      console.log(rowData);
+      setChatResponse(
+        await invoke('get_process_info', {
+          prompt: `<${rowData['name']}> ["PID"=${rowData.pid}, "name"=${rowData.name}, "memory"=${rowData.memory}bytes, "status"=${rowData.status}, "user"=${rowData.user}]`,
+        })
+      );
     }
     if (depth == 0) {
-      setChatResponse(await invoke('get_dumb_process_info', { prompt: pName }));
+      setChatResponse(
+        await invoke('get_dumb_process_info', { prompt: rowData['name'] })
+      );
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={debounceOnOpenChange}>
       <DialogTrigger onClick={() => sendChatMessage(depth)}>
-        {depth == 0 ? <p>nerd</p> : <p>(i)</p>}
+        {/* {depth == 0 ? <p>nerd</p> : <p>(i)</p>} */}
+        <InfoIcon className='w-4 h-4' />
       </DialogTrigger>
       <DialogContent>
         {chatResponse == '' ? (

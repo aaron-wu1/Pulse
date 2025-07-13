@@ -22,3 +22,7 @@ Uses crate `sysinfo` to grab process data from OS
 ### Quickstart
 
 Download the latest release [here](https://github.com/aaron-wu1/Pulse/releases) and follow install instructions
+
+### To build
+
+`yarn tauri build --bundles dmg`

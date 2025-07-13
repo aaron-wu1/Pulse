@@ -21,7 +21,7 @@ export function Chat() {
 
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant='outline' size='icon'>
           <MessageCircleQuestion />
           <span className='sr-only'>Toggle Chat</span>

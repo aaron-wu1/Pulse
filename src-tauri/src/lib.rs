@@ -182,13 +182,20 @@ async fn get_process_info(
 ) -> Result<String, ()> {
     println!("BACKEND received: {}", prompt);
     let encap_prompt = format!(
-        r#"[System]
-    You are an expert on macOS system processes. For each of the following process names, provide a brief explanation (1–3 sentences max). If the function is unknown or unclear, say "Unknown."
-    
-    [User]
-    {}
-    
-    [Assistant]
+        r#"You are a macOS system process expert. Given a process name and metadata, output a concise 1–3 sentence explanation of its role. Write clearly for a general audience (technical or not). Use public knowledge only.
+
+        Only return plaintext.
+
+        If the process is unknown, answer that you don't know.
+
+        Do not include metrics or states like PID, memory, or user in the explanation.
+
+        If the process name is in reverse-domain format (e.g., com.apple.Safari), treat it as a bundle identifier and explain the app/service.
+
+        Never return plain text. Only one explanation per process.
+        
+        Here's the infomation:
+        {}
     "#,
         prompt
     );
