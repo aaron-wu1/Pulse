@@ -1,0 +1,15 @@
+#!/bin/bash
+
+POSTGRES_BIN="./sidecar/postgres/bin/postgres"
+DATA_DIR="./sidecar/postgres/data"
+CONFIG_FILE="./sidecar/postgres/postgresql.conf"
+
+# Initialize the data directory if it doesn't exist
+if [ ! -d "$DATA_DIR" ]; then
+    echo "Initializing PostgreSQL data directory..."
+    ./sidecar/postgres/bin/initdb -D "$DATA_DIR"
+fi
+
+# Start the PostgreSQL server
+echo "Starting PostgreSQL server..."
+"$POSTGRES_BIN" -D "$DATA_DIR" -c config_file="$CONFIG_FILE" &

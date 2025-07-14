@@ -11,13 +11,16 @@ use chat_service::ChatService;
 use once_cell::sync::Lazy;
 use process_update_controller::ProcessUpdateController;
 use serde::Serialize;
+use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use sysinfo::{Pid, System};
 use tauri::{AppHandle, Emitter};
+use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
 static PROCESS_OBSERVER_STARTED: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+pub static INITDB_DONE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[derive(Serialize, Clone)]
 struct ProcessKilledInfo {
@@ -252,6 +255,30 @@ async fn update_rate(
     Ok(())
 }
 
+// #[tauri::command]
+// async fn start_pgvector_sidecar(app: AppHandle, window: tauri::Window) -> Result<(), String> {
+//     let (mut rx, _child) = app
+//         .shell()
+//         .sidecar("postgres") // This must match your externalBin entry
+//         .map_err(|e| e.to_string())?
+//         .spawn()
+//         .map_err(|e| e.to_string())?;
+
+//     tauri::async_runtime::spawn(async move {
+//         while let Some(event) = rx.recv().await {
+//             if let CommandEvent::Stdout(line) = event {
+//                 let output = String::from_utf8_lossy(&line);
+//                 println!("[pgvector sidecar]: {}", output);
+
+//                 // Optional: emit to frontend
+//                 window.emit("pgvector-stdout", output.to_string()).unwrap();
+//             }
+//         }
+//     });
+
+//     Ok(())
+// }
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {
     let chat_service = ChatService::new()
@@ -265,6 +292,34 @@ pub async fn run() {
         .plugin(tauri_plugin_shell::init())
         .manage(tokio::sync::Mutex::new(chat_service)) // add chat service to tauri state
         .manage(shared_controller)
+        .setup(|app| {
+            if INITDB_DONE.swap(true, Ordering::SeqCst) {
+                return Ok(()); // Already initialized, skip
+            }
+
+            let app_handle = app.handle().clone();
+
+            // pgvector sidecar
+            tauri::async_runtime::spawn(async move {
+                let data_dir = "./sidecar/postgres/data";
+                let initdb_bin = "initdb";
+
+                if !Path::new(data_dir).exists() {
+                    println!("Initializing Postgres data dir...");
+                    if let Err(err) = app_handle
+                        .shell()
+                        .sidecar(initdb_bin)
+                        .unwrap()
+                        .args(&["-D", data_dir])
+                        .spawn()
+                    {
+                        eprintln!("Failed to spawn initdb: {:?}", err);
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             get_stats,
@@ -277,7 +332,8 @@ pub async fn run() {
             resume_updates,
             pause_updates,
             update_sys_mem_stats,
-            update_rate
+            update_rate,
+            // start_pgvector_sidecar
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
